@@ -7,11 +7,12 @@ import dev.emi.trinkets.api.client.TrinketRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.zhaiji.catburger.CatBurger;
@@ -19,32 +20,37 @@ import net.zhaiji.catburger.config.CatBurgerConfig;
 import org.joml.Quaternionf;
 
 public class CatBurgerRenderer implements TrinketRenderer {
+
+    private static final Minecraft MC = Minecraft.getInstance();
+
     public static BakedModel getModel() {
         return Minecraft.getInstance().getModelManager().getModel(new ModelResourceLocation(ResourceLocation.fromNamespaceAndPath(CatBurger.MOD_ID, "cat_burger"), "inventory"));
     }
 
-    public static double getFloatSpeed(LivingEntity livingEntity) {
-        return CatBurgerConfig.get().client.float_distance / 2 * Math.sin(livingEntity.tickCount * Math.PI / CatBurgerConfig.get().client.time * 2);
+    public static double getFloatSpeed(LivingEntityRenderState state) {
+        return CatBurgerConfig.get().client.float_distance / 2.0 * Math.sin(state.ageInTicks * Math.PI / CatBurgerConfig.get().client.time * 2.0);
     }
 
     @Override
     public void render(
             ItemStack stack,
             SlotReference slotReference,
-            EntityModel<? extends LivingEntity> contextModel,
+            EntityModel<? extends LivingEntityRenderState> contextModel,
             PoseStack matrices,
             MultiBufferSource vertexConsumers,
             int light,
-            LivingEntity entity,
-            float limbAngle,
-            float limbDistance,
-            float tickDelta,
-            float animationProgress,
-            float headYaw,
-            float headPitch
+            LivingEntityRenderState state,
+            float headYaw, float headPitch
     ) {
-        Minecraft minecraft = Minecraft.getInstance();
-        BakedModel model = getModel();
+//        MC.getItemModelResolver().updateForTopItem(
+//                state.headItem,
+//                stack,
+//                ItemDisplayContext.HEAD,
+//                false,
+//                MC.level,
+//                MC.player,
+//                1
+//        );
         matrices.pushPose();
 
         double yawRadians = Math.toRadians(headYaw);
@@ -55,11 +61,11 @@ public class CatBurgerRenderer implements TrinketRenderer {
         xOffset += Math.cos(yawRadians + Math.PI / 2) * CatBurgerConfig.get().client.front_back_offset;
         zOffset -= Math.sin(yawRadians + Math.PI / 2) * CatBurgerConfig.get().client.front_back_offset;
 
-        yOffset += CatBurgerRenderer.getFloatSpeed(entity);
+        yOffset += CatBurgerRenderer.getFloatSpeed(state);
         yOffset -= CatBurgerConfig.get().client.vertical_offset;
 
 
-        if (entity.isCrouching()) {
+        if (state.hasPose(Pose.CROUCHING)) {
             matrices.translate(0.0F, 0.1875F, 0.0F);
         }
 
@@ -73,16 +79,18 @@ public class CatBurgerRenderer implements TrinketRenderer {
         matrices.mulPose(new Quaternionf().rotateZ((float) Math.toRadians(180)));
         matrices.mulPose(Axis.YP.rotationDegrees(-headYaw));
         matrices.mulPose(Axis.XP.rotationDegrees(-headPitch));
-        minecraft.getItemRenderer().render(
+        Minecraft.getInstance().getItemRenderer().renderStatic(
                 stack,
                 ItemDisplayContext.HEAD,
-                false,
-                matrices,
-                vertexConsumers,
                 light,
                 OverlayTexture.NO_OVERLAY,
-                model
+                matrices,
+                vertexConsumers,
+                MC.level,
+                0
         );
+
+
         matrices.popPose();
     }
 }

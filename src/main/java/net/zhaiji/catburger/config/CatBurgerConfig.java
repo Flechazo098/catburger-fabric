@@ -18,12 +18,9 @@ public class CatBurgerConfig implements ConfigData {
 
     public boolean wake_up_can_reset_cooldown = true;
 
-
-    @ConfigEntry.BoundedDiscrete(min = 1, max = Integer.MAX_VALUE)
     public int totem_cooldown = 36000;
 
 
-    @ConfigEntry.BoundedDiscrete(min = 1, max = Integer.MAX_VALUE)
     public int trinket_cooldown = 1200;
 
 
@@ -35,7 +32,6 @@ public class CatBurgerConfig implements ConfigData {
     public int food_max_restoration = 18;
 
 
-    @ConfigEntry.BoundedDiscrete(min = 1, max = Integer.MAX_VALUE)
     public int health_restoration_form_totem = 20;
 
 

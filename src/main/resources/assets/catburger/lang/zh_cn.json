@@ -1,6 +1,9 @@
 {
   "item.catburger.cat_burger": "猫猫汉堡",
   "item.catburger.cat_burger.tooltip": "喵!",
+  "item.catburger.cat_burger.cooldown.remaining": "图腾效果冷却中：%s秒",
+  "item.catburger.cat_burger.cooldown.ready": "图腾效果已就绪",
+
   "creativetab.catburger.catburger_tab": "猫猫汉堡",
   "trinkets.slot.head.head": "猫猫",
 

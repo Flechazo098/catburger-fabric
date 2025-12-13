@@ -1,6 +1,9 @@
 {
   "item.catburger.cat_burger": "猫バーガー",
   "item.catburger.cat_burger.tooltip": "にゃー!",
+  "item.catburger.cat_burger.cooldown.remaining": "トーテム効果 冷却中: %s秒",
+  "item.catburger.cat_burger.cooldown.ready": "トーテム効果 利用可能",
+
   "creativetab.catburger.catburger_tab": "猫バーガー",
   "trinkets.slot.head.head": "猫",
 
