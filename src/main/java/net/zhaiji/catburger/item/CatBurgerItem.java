@@ -4,7 +4,6 @@ import dev.emi.trinkets.api.SlotReference;
 import dev.emi.trinkets.api.TrinketItem;
 import dev.emi.trinkets.api.TrinketsApi;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -41,12 +40,6 @@ public class CatBurgerItem extends TrinketItem {
                 handlePlayerWakeUp(newPlayer);
             }
         });
-
-        ServerTickEvents.END_SERVER_TICK.register(server -> {
-            for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-                checkAndRestoreFood(player);
-            }
-        });
     }
 
     private void checkAndRestoreFood(Player player) {
@@ -68,6 +61,7 @@ public class CatBurgerItem extends TrinketItem {
 
     @Override
     public void tick(ItemStack stack, SlotReference slot, LivingEntity entity) {
+        if (entity instanceof Player player) checkAndRestoreFood(player);
     }
 
     @Override
