@@ -6,7 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.zhaiji.catburger.CatBurger;
@@ -14,7 +14,7 @@ import net.zhaiji.catburger.CatBurger;
 public class InitCreativeModeTab {
     public static final ResourceKey<CreativeModeTab> CATBURGER_TAB_KEY = ResourceKey.create(
             Registries.CREATIVE_MODE_TAB,
-            ResourceLocation.fromNamespaceAndPath(CatBurger.MOD_ID, "catburger_tab")
+            Identifier.fromNamespaceAndPath(CatBurger.MOD_ID, "catburger_tab")
     );
 
     public static final CreativeModeTab CATBURGER_TAB = FabricItemGroup.builder()

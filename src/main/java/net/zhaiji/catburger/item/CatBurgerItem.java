@@ -8,7 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -17,18 +17,20 @@ import net.minecraft.world.food.FoodData;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.zhaiji.catburger.CatBurger;
 import net.zhaiji.catburger.attachment.ModAttachmentType;
 import net.zhaiji.catburger.config.CatBurgerConfig;
 import net.zhaiji.catburger.init.InitItem;
 import net.zhaiji.catburger.network.CatBurgerPacket;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 public class CatBurgerItem extends TrinketItem {
 
     public CatBurgerItem() {
-        super(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(CatBurger.MOD_ID, "cat_burger"))));
+        super(new Item.Properties().stacksTo(1).setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(CatBurger.MOD_ID, "cat_burger"))));
 
         registerEventHandlers();
     }
@@ -45,9 +47,7 @@ public class CatBurgerItem extends TrinketItem {
     private void checkAndRestoreFood(Player player) {
         if (player.tickCount % CatBurgerConfig.get().trinket_cooldown != 0) return;
 
-        boolean hasCatBurger = TrinketsApi.getTrinketComponent(player)
-                .map(component -> component.isEquipped(InitItem.CAT_BURGER))
-                .orElse(false);
+        boolean hasCatBurger = hasCatBurgerEquipped(player);
 
         if (hasCatBurger) {
             FoodData foodData = player.getFoodData();
@@ -74,11 +74,12 @@ public class CatBurgerItem extends TrinketItem {
     public void appendHoverText(
             ItemStack itemStack,
             TooltipContext tooltipContext,
-            List<Component> list,
+            TooltipDisplay tooltipDisplay,
+            Consumer<Component> tooltipAppender,
             TooltipFlag tooltipFlag
     ) {
-        super.appendHoverText(itemStack, tooltipContext, list, tooltipFlag);
-        list.add(Component.translatable("item.catburger.cat_burger.tooltip"));
+        super.appendHoverText(itemStack, tooltipContext, tooltipDisplay, tooltipAppender, tooltipFlag);
+        tooltipAppender.accept(Component.translatable("item.catburger.cat_burger.tooltip"));
 
         Player player = Minecraft.getInstance().player;
         if (player == null) return;
@@ -96,9 +97,9 @@ public class CatBurgerItem extends TrinketItem {
 
         if (remainingTicks > 0) {
             double seconds = remainingTicks / 20.0;
-            list.add(Component.translatable("item.catburger.cat_burger.cooldown.remaining", String.format("%.1f", seconds)));
+            tooltipAppender.accept(Component.translatable("item.catburger.cat_burger.cooldown.remaining", String.format("%.1f", seconds)));
         } else {
-            list.add(Component.translatable("item.catburger.cat_burger.cooldown.ready"));
+            tooltipAppender.accept(Component.translatable("item.catburger.cat_burger.cooldown.ready"));
         }
     }
 
@@ -113,31 +114,31 @@ public class CatBurgerItem extends TrinketItem {
             return false;
         }
 
-        return TrinketsApi.getTrinketComponent(player)
-                .map(component -> {
-                    if (component.isEquipped(InitItem.CAT_BURGER)) {
-                        player.setHealth(CatBurgerConfig.get().health_restoration_form_totem);
-                        player.getFoodData().setFoodLevel(CatBurgerConfig.get().food_restoration_form_totem);
-                        player.getFoodData().setSaturation(CatBurgerConfig.get().saturation_restoration_form_totem);
-                        player.setAttached(ModAttachmentType.CAT_BURGER_TOTEM_COOLDOWN, gameTime);
-                        player.level().broadcastEntityEvent(player, (byte) 35);
-                        if (player instanceof ServerPlayer serverPlayer) {
-                            CatBurgerPacket.sendToClient(serverPlayer);
-                        }
-                        return true;
-                    }
-                    return false;
-                }).orElse(false);
+        if (!hasCatBurgerEquipped(player)) {
+            return false;
+        }
+
+        player.setHealth(CatBurgerConfig.get().health_restoration_form_totem);
+        player.getFoodData().setFoodLevel(CatBurgerConfig.get().food_restoration_form_totem);
+        player.getFoodData().setSaturation(CatBurgerConfig.get().saturation_restoration_form_totem);
+        player.setAttached(ModAttachmentType.CAT_BURGER_TOTEM_COOLDOWN, gameTime);
+        player.level().broadcastEntityEvent(player, (byte) 35);
+        if (player instanceof ServerPlayer serverPlayer) {
+            CatBurgerPacket.sendToClient(serverPlayer);
+        }
+        return true;
     }
 
     public static void handlePlayerWakeUp(Player player) {
         if (!CatBurgerConfig.get().wake_up_can_reset_cooldown) return;
 
-        TrinketsApi.getTrinketComponent(player).ifPresent(component -> {
-            if (component.isEquipped(InitItem.CAT_BURGER)) {
-                player.setAttached(ModAttachmentType.CAT_BURGER_TOTEM_COOLDOWN, 0L);
-            }
-        });
+        if (hasCatBurgerEquipped(player)) {
+            player.setAttached(ModAttachmentType.CAT_BURGER_TOTEM_COOLDOWN, 0L);
+        }
     }
 
+    private static boolean hasCatBurgerEquipped(Player player) {
+        var component = TrinketsApi.getTrinketComponent(player).orElse(null);
+        return component.isEquipped(InitItem.CAT_BURGER);
+    }
 }

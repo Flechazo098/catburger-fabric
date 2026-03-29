@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.13.6'
+    id 'fabric-loom' version '1.14-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -53,18 +53,10 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.clothconfig_version}"
-    modImplementation "maven.modrinth:modmenu:7iGb2ltH"
-    modImplementation "maven.modrinth:trinkets-canary:79wgHzjg"
-    modImplementation "curse.maven:sodium-394468:6382661"
-    modImplementation "curse.maven:irisshaders-455508:6213644"
-
+    modImplementation "maven.modrinth:modmenu:Tyk71iSw"
+    modImplementation "maven.modrinth:trinkets-updated:DHE2OnLP"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
-
-    // fuck loom
-    implementation files("libs/antlr4-runtime-4.13.1.jar")
-    implementation files("libs/glsl-transformer-3.0.0-pre3.jar")
-    implementation files("libs/jcpp-1.4.14.jar")
 }
 
 processResources {
